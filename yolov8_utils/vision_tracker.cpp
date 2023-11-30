@@ -16,10 +16,11 @@
 VisionTracker::VisionTracker(std::string configPath, int argc, char **argv)
 {
    // === initialize parameters === //
-  printf("[VisionTracker(std::string configPath)] Start _init(configPath)\n");
+  printf("[VisionTracker constructer]Start _init(configPath,argc,argv)\n");
   _init(configPath,argc,argv);
-  printf("[VisionTracker(std::string configPath)] End _init(configPath)\n");
+  printf("[VisionTracker constructer]End _init(configPath,argc,argv)\n");
 }
+
 VisionTracker::VisionTracker(std::string configPath)
 {
 #if defined (SPDLOG)
@@ -240,13 +241,18 @@ bool VisionTracker::_init(std::string configPath,int argc, char **argv)
 
   // Distance Estimation
   m_focalRescaleRatio = (float)m_videoHeight / (float)m_modelHeight;
-  cout<<"Start Create Object Tracker"<<endl;
+  cout<<"Start Create Object Tracker 2023-11-30"<<endl;
   // Object Traccker
+  cout<<"Create ObjectTracker m_humanTracker"<<endl;
   m_humanTracker = new ObjectTracker(m_config, "human");
+  cout<<"Create ObjectTracker m_humanTracker Done....."<<endl;
   m_bikeTracker = new ObjectTracker(m_config, "bike");
+  cout<<"Create ObjectTracker m_bikeTracker Done....."<<endl;
   m_vehicleTracker = new ObjectTracker(m_config, "vehicle");
+  cout<<"Create ObjectTracker m_vehicleTracker Done....."<<endl;
   m_motorbikeTracker = new ObjectTracker(m_config, "motorbike");
-  cout<<"End Create Object Tracker"<<endl;
+  cout<<"Create ObjectTracker m_motorbikeTracker Done....."<<endl;
+  cout<<"End Create Object Tracker 2023-11-30"<<endl;
   // TODO:
   cout<<"Start setROI"<<endl;
   m_vehicleTracker->setROI(*m_roi);

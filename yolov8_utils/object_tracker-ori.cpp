@@ -15,7 +15,7 @@
 
 
 ObjectTracker::ObjectTracker(Config_S *_config, string _task)
-{ 
+{
   // Task name
   if (_task == "human")
   {
@@ -37,6 +37,7 @@ ObjectTracker::ObjectTracker(Config_S *_config, string _task)
     m_task = TRACK_MOTORBIKE;
     m_loggerStr = "MotorbikeTracker";
   }
+
   // Logger
 #if defined (SPDLOG)
   auto m_logger = spdlog::stdout_color_mt(m_loggerStr);
@@ -58,6 +59,7 @@ ObjectTracker::ObjectTracker(Config_S *_config, string _task)
   else
     m_logger->set_level(spdlog::level::info);
 #endif
+
   // Image Size
   m_videoWidth = _config->frameWidth;
   m_videoHeight = _config->frameHeight;
@@ -68,6 +70,7 @@ ObjectTracker::ObjectTracker(Config_S *_config, string _task)
 
   // Object Tracking
   m_maxObject = _config->stOdConfig.maxDetection;
+  cout<<"m_maxObject = "<<endl;
   m_maxTracking = _config->stTrackerConifg.maxTracking;
 
   // Distance Estimation
@@ -85,8 +88,16 @@ ObjectTracker::ObjectTracker(Config_S *_config, string _task)
   m_roi = new BoundingBox(-1, -1, -1, -1, -1);
 
   // Trajectory
+
   m_trajectory = new Trajectory(_config);
+
+
+   cout<<"Start ObjectTracker _init(_config) 2023-11-30~~~~~~~~~~~~~"<<endl;
   _init(_config);
+  cout<<"End ObjectTracker _init(_config) 2023-11-30~~~~~~~~~~~~~"<<endl;
+
+ 
+  
 };
 
 
@@ -105,9 +116,10 @@ ObjectTracker::~ObjectTracker()
 // ============================================
 bool ObjectTracker::_init(Config_S *_config)
 {
-// #if defined (SPDLOG)
-//   auto m_logger = spdlog::get(m_loggerStr);
-// #endif
+#if defined (SPDLOG)
+  auto m_logger = spdlog::get(m_loggerStr);
+#endif
+
   // Object Detection
   if (m_task == TRACK_HUMAN)
   {
@@ -130,11 +142,8 @@ bool ObjectTracker::_init(Config_S *_config)
     m_tHeight = 20;                  // BoundingBox's height must > tHeight
   }
 
-    if (m_task != TRACK_CAR)
-    {
-      m_tMatchSingle = 0.3;
-      m_tMatchMultiple = 0.3;
-    }
+
+  // Matching threshold
   if (_config->stTrackerConifg.matchingLevel == "Low")      // Level: Low
   {
     // rAppearance settings
@@ -158,7 +167,6 @@ bool ObjectTracker::_init(Config_S *_config)
       m_tMatchSingle = 0.3;
       m_tMatchMultiple = 0.3;
     }
-  
   }
   else if (_config->stTrackerConifg.matchingLevel == "High")   // Level: High
   {
@@ -176,39 +184,37 @@ bool ObjectTracker::_init(Config_S *_config)
 #endif
   }
 
-
   // Alive counter threshold
   m_tAliveCounter = 10;
 
   if (m_task != TRACK_CAR)
-  {
-     m_tAliveCounter *= 0.3;
-  }
-
+    m_tAliveCounter *= 0.3;
+  cout<<"Start ObjectTracker::_init(Config_S *_config) --> _initObjectList !!!!!!!"<<endl;
   _initObjectList();
+  cout<<"End ObjectTracker::_init(Config_S *_config) --> _initObjectList !!!!!!!!"<<endl;
 
-  return true;
+  cout<<"End ObjectTracker::_init(Config_S *_config) !!!!!!! 2023-11-30"<<endl;
 }
 
 
 bool ObjectTracker::_initObjectList()
 {
-  //printf("[bool ObjectTracker::_initObjectList()] Start ----------------------\n");
   // Initialize Object List
+  cout<<"[ObjectTracker::_initObjectList]m_maxObject = "<<m_maxObject<<endl;
   for (int i=0; i<m_maxObject; i++)
   {
     Object tmpObj;
     tmpObj.id = i; // Assign Object ID
     m_currObjList.push_back(tmpObj);
   }
-
+  cout<<"[ObjectTracker::_initObjectList()] m_currObjList.size() = "<<m_currObjList.size()<<endl;
   for (int i=0; i<m_maxObject; i++)
   {
     Object tmpObj;
     m_prevObjList.push_back(tmpObj);
   }
-  //printf("[bool ObjectTracker::_initObjectList()] End ----------------------\n");
-  return true;  
+  cout<<"[ObjectTracker::_initObjectList()] m_prevObjList.size() = "<<m_prevObjList.size()<<endl;
+  return true;
 }
 
 
@@ -259,21 +265,17 @@ void ObjectTracker::run(cv::Mat &img, vector<BoundingBox> &bboxList)
 #endif
 
   _setCurrBoundingBox(bboxList);
- 
+
   _updateFrameStamp();
-  
+
   _setCurrFrame(img);
-  
+
   _updateCurrObjectList();
-  
+
   _updateTrackingObject();
-  
+
   _filterOverlapObject();
-  
- 
 
-
-  
 #if defined (SPDLOG)
   if (m_estimateTime)
   {
@@ -292,7 +294,6 @@ void ObjectTracker::_updateTrackingObject()
   // Max Tracking
   int numCurrObj = 0;
   int numPrevObj = 0;
- 
   for (int i=0; i < m_maxTracking; i++)
   {
     // Get number of enabled current object
@@ -345,23 +346,20 @@ void ObjectTracker::_updateTrackingObject()
   // Update Tracked Object's Location
   if (m_task == TRACK_HUMAN)
   {
-    cout << "-------------------------------" << endl;
-    cout << m_loggerStr << endl;
-    m_trajectory->bboxToTrajectory(m_prevObjList);
-    cout << "finish bboxToTrajectory " << endl;
-    cout << "m_prevObjList.size() = " << m_prevObjList.size() << endl;
+    // cout << "-------------------------------" << endl;
+    // cout << m_loggerStr << endl;
+    // m_trajectory->bboxToTrajectory(m_prevObjList);
+
     for (int i=0; i<m_prevObjList.size(); i++)
     {
       Object& obj = m_prevObjList[i];
       if (obj.status == 0)
         continue;
 
-      float d = m_trajectory->updateLocation3D(obj);
-      cout << "finished updateLocation3D " << endl;
+      m_trajectory->updateLocation3D(obj);
+
       // cout << "Obj[" << obj.id << "] Loc = (" << obj.pLocation3D.x << " m, " << obj.pLocation3D.y << " m, " << obj.pLocation3D.z << " m)" << endl;
     }
-    cout << "finish updateLocation3D " << endl;
-
   }
 }
 
@@ -427,12 +425,13 @@ int ObjectTracker::_updateCurrObjectList() //TODO: refactor?
   auto time_1 = std::chrono::high_resolution_clock::now();
 
   int ret = 1;
+
   // Initialize
   for (int i=0; i<m_maxObject; i++)
   {
     m_currObjList[i].init(m_frameStamp);
   }
- 
+
   int objIdx = 0;
   for (int i=0; i<(int)m_bboxList.size(); i++)
   {
@@ -455,12 +454,12 @@ int ObjectTracker::_updateCurrObjectList() //TODO: refactor?
 
         // Appearance Features
         BoundingBox rescaleBBox(-1, -1, -1, -1, m_bboxList[i].label);
-       
         utils::rescaleBBox(
           m_bboxList[i], rescaleBBox, m_modelWidth, m_modelHeight, m_videoWidth, m_videoHeight);
+
         cv::Mat imgCrop;
         imgUtil::cropImages(m_img, imgCrop, rescaleBBox);
-      
+
         // Get Keypoints and Descriptors
         cv::Mat imgGray;
         vector<cv::KeyPoint> kpt;
@@ -1927,6 +1926,7 @@ void ObjectTracker::_disableOverlapObject(vector<Object> &currObjectList)
 
 bool ObjectTracker::_isValidHumanBBox(BoundingBox &box)
 {
+
   if (box.label != DETECT_HUMAN)
     return false;
 
@@ -2238,7 +2238,7 @@ int ObjectTracker::_updateFrameStamp()
   {
     m_frameStamp = 0;
   }
-  return 1;
+
 }
 
 

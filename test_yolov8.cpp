@@ -49,10 +49,9 @@ int main(int argc, char **argv)
 	//                  Entry Point                 //
 	// ============================================ //
 	int idxFrame = 0;
-	cv::Mat img;
+	// cv::Mat img;
 	int sig_flag = 0;
 	VisionTracker vTracker("./config/config.txt",argc,argv);
-
 	VisionTrackingResults result;
 	
 	std::cout << "Start WNC Vision Tracking" << std::endl;
@@ -61,9 +60,9 @@ int main(int argc, char **argv)
 	while(1)
 	{	
 		idxFrame += 1;
-		
-		// Run Object Tracking
-		vTracker.run(img);
+
+		// Run Object Tracking (For AMBA, input img is from AMBA tensor)
+		vTracker.run();
 
 		// Get Tracked Results
 		vTracker.getResults(result);

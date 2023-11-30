@@ -664,7 +664,7 @@ float Trajectory::_bboxToDistanceZ(BoundingBox& box)
 
 float Trajectory::updateLocation3D(Object& obj)
 {
-  if (obj.bboxList.size() == 0)
+   if (obj.bboxList.size() == 0)
     return -1;
 
   BoundingBox& box = obj.bboxList.back();
@@ -683,11 +683,13 @@ float Trajectory::updateLocation3D(Object& obj)
   float distanceX = (distanceZ / pY) * (pX);
   float distanceY = 0;
 
-  // cout << "ID = " << obj.id << endl;
-  // cout << "Location = (" << distanceX << ", " << distanceY << ", " << distanceZ << ")" << endl;
-  // cout << "DistX = " << xDist << endl;
-  // cout << "xCenter = " << xCenter << endl;
-  // cout << "pCenter x = " << pCenter.x << endl;
+  cout << "ID = " << obj.id << endl;
+  cout << "Location = (" << distanceX << ", " << distanceY << ", " << distanceZ << ")" << endl;
+  cout << "DistX = " << xDist << endl;
+  cout << "xCenter = " << xCenter << endl;
+  cout << "pCenter x = " << pCenter.x << endl;
   cv::Point3f pLoc3D(distanceX, distanceY, distanceZ);
   obj.pLocation3D = pLoc3D;
+  cout<<"End Trajectory::updateLocation3D"<<endl;
+  return 0;
 }
