@@ -136,7 +136,7 @@ class YoloV8_Class
         int Get_Yolov8_Bounding_Boxes(std::vector<BoundingBox> &bboxList,cv::Mat img);
 
 
-        int Get_Yolov8_Bounding_Boxes_Ver2(std::vector<v8xyxy> &bboxList, int model_size);
+        int Get_Yolov8_Bounding_Boxes_Ver2(v8xyxy bboxList[MAX_YOLO_BBX], int model_size);
 
 
         void Draw_Yolov8_Bounding_Boxes(std::vector<BoundingBox> bboxList,live_ctx_t *live_ctx, live_params_t *params);

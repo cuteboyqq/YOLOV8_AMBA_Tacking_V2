@@ -736,8 +736,9 @@ std::vector<BoundingBox> YoloV8_Class::Get_yolov8_Bounding_Boxes(live_ctx_t *liv
 	}
     return bboxList;
 }
-int YoloV8_Class::Get_Yolov8_Bounding_Boxes_Ver2(std::vector<v8xyxy> &bboxList, int model_size)
-{
+int YoloV8_Class::Get_Yolov8_Bounding_Boxes_Ver2(v8xyxy bboxList[MAX_YOLO_BBX], int model_size)
+{	
+	int bbx_number = 0;
   //Object obj;
 	printf("[Get_Yolov8_Bounding_Boxes]start initial yolov8_result~~~\n");
  	// yolov8_result_t *yolov8_result = (yolov8_result_t *)live_ctx->thread_ctx.thread->nn_arm_ctx.result;
@@ -799,21 +800,27 @@ int YoloV8_Class::Get_Yolov8_Bounding_Boxes_Ver2(std::vector<v8xyxy> &bboxList, 
 					bb.c_prob = c_prob; // class probability, apply sigmoid()
 					bb.c = id; // class
 				
-				bboxList.push_back(bb);
+				bboxList[i] = bb;
+				bbx_number+=1;
+				// bboxList.push_back(bb);
 			}
 			
 
 		}
 		printf("[Get_Yolov8_Bounding_Boxes]print BB~~~~~~~~~~~~~~~~~~\n");
 		printf("[Get_Yolov8_Bounding_Boxes]Show v8xyxy bboxList ~~~~~~\n");
-		for (int i=0;i<bboxList.size();i++)
-			{	
-				printf("%d, %d, %d, %d, %f, %d\n",bboxList[i].x1,
+		for (int i=0;i<MAX_YOLO_BBX;i++)
+			{
+				if(bboxList[i].x1!=0 && bboxList[i].y1!=0 && bboxList[i].x2 && bboxList[i].y2)
+				{
+					printf("%d, %d, %d, %d, %f, %d\n",bboxList[i].x1,
 													bboxList[i].y1,
 													bboxList[i].x2,
 													bboxList[i].y2,
 													bboxList[i].c_prob,
 													bboxList[i].c);
+				}
+				
 				// printf("%f, %f, %f, %f, %d\n",bboxList[i].x1,
 				// 							bboxList[i].y1,
 				// 							bboxList[i].x2,
@@ -821,7 +828,7 @@ int YoloV8_Class::Get_Yolov8_Bounding_Boxes_Ver2(std::vector<v8xyxy> &bboxList, 
 				// 							bboxList[i].label);
 			}
 	}
-		return true;
+		return bbx_number;
 }
 
 int YoloV8_Class::Get_Yolov8_Bounding_Boxes(std::vector<BoundingBox> &bboxList,cv::Mat img)
@@ -1382,10 +1389,11 @@ void YoloV8_Class::_OD_postProcessing()
 {
 	// Alister add 2023-11-29
 	// Get m_yoloOut 
-		std::vector<v8xyxy> m_yoloOut;
-		YoloV8_Class::Get_Yolov8_Bounding_Boxes_Ver2(m_yoloOut,m_inputWidth);
+		// std::vector<v8xyxy> m_yoloOut;
+		int bbx_number = YoloV8_Class::Get_Yolov8_Bounding_Boxes_Ver2(m_yoloOut,m_inputWidth);
 	// Get m_numBox
-		m_numBox = m_yoloOut.size();
+		m_numBox = bbx_number;
+		cout<<"m_numBox : "<<m_numBox<<endl;
 
   //Original code from yolov8.cpp
 //   m_numBox = m_decoder->decode((
@@ -1419,9 +1427,9 @@ YoloV8_Class::YoloV8_Class(Config_S *config)  // main function
   //   m_logger->set_level(spdlog::level::info);
   // }
   cout<<"new live_params_t"<<endl;
-  params = new live_params_t;
+  //params = new live_params_t;
   cout<<"new live_ctx_t"<<endl;
-  live_ctx = new live_ctx_t;
+  //live_ctx = new live_ctx_t;
 
   std::string dlcFilePath = config->modelPath;
   std::string rumtimeStr = config->runtime;

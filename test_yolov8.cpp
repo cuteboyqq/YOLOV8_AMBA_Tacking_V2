@@ -13,13 +13,29 @@
 using namespace std;
 
 
+std::vector<std::string> getInputFileList(const char* filePath)
+{
+	// Read lines from the input lists file
+	// and store the paths to inputs in strings
+	std::ifstream inputList(filePath);
+	std::string fileLine;
+	std::vector<std::string> lines;
+	while (std::getline(inputList, fileLine))
+	{
+		if (fileLine.empty()) continue;
+		lines.push_back(fileLine);
+	}
+	return lines;
+}
+
+
 void showTrackedHumanResults(std::vector<TrackedObj>& objList)
 {
 	for (int i=0; i<objList.size(); i++)
   {
     TrackedObj& obj = objList[i];
 
-	cout << "Obj[" << obj.id << "] ";
+	  cout << "Obj[" << obj.id << "] ";
     cout << "Type: " << obj.type << " ";
     cout << "Conf: " << obj.confidence << " ";
     cout << "Loc: (" << obj.pLoc.x << " m, " << obj.pLoc.y << " m, " << obj.pLoc.z << " m)" << endl;
@@ -29,46 +45,39 @@ void showTrackedHumanResults(std::vector<TrackedObj>& objList)
 
 int main(int argc, char **argv)
 {
-	int rval = 0;
-	int sig_flag = 0;
+	// ============================================ //
+	//                  Entry Point                 //
+	// ============================================ //
 	int idxFrame = 0;
-	// std::vector<BoundingBox> bboxList;
-	// YoloV8_Class yolov8(argc,argv);
-	cout<<"create vTracker"<<endl;
-	VisionTracker vTracker("./config/config.txt",argc,argv);
-	cout<<"create VisionTrackingResults"<<endl;
-	VisionTrackingResults result;
-	//ea_tensor_t *tensor;
-	//img_set_t *img_set;
-	//img_set = new img_set_t;
-	// cv::Mat img = cv::Mat::zeros(1920,1080,CV_8UC3);
-	cout<<"create cv::Mat img"<<endl;
 	cv::Mat img;
+	int sig_flag = 0;
+	VisionTracker vTracker("./config/config.txt",argc,argv);
+
+	VisionTrackingResults result;
+	
+	std::cout << "Start WNC Vision Tracking" << std::endl;
+	std::cout << "-------------------------------------------------" << std::endl;
+	
 	while(1)
 	{	
-		idxFrame+=1;
-		cout<<"---------------------------[main]Frame num = "<<idxFrame<<"-------------------------------"<<endl;
+		idxFrame += 1;
 		
-		// img = yolov8.Get_img();
-		// if (img.empty())
-		// {
-		// 	break;
-		// }
-		// sig_flag = yolov8.test_yolov8_run();
-		// bboxList.clear();
-		// yolov8.Get_Yolov8_Bounding_Boxes(bboxList,img);
-		cout<<"Start vTracker.run(img)"<<endl;
+		// Run Object Tracking
 		vTracker.run(img);
-		cout<<"Done vTracker.run(img)"<<endl;
+
+		// Get Tracked Results
 		vTracker.getResults(result);
+
+		// Show Tracked Results
 		if (vTracker.isFinishDetection())
 		{
 			std::cout << "\nFrame: [" << idxFrame << "]" << std::endl;
 			std::cout << "-------------------------------------------------" << std::endl;
 			showTrackedHumanResults(result.humanObjList);
 		}
-		
 	};
 
-	return rval;
+	std::cout << "-------------------------------------------------" << std::endl;
+	std::cout << "Stop WNC Vision Tracking" << std::endl;
+	
 }
