@@ -558,6 +558,7 @@ bool VisionTracker::_initROI()
 //====================================================
 //              main  run
 //====================================================
+
 bool VisionTracker::run(cv::Mat &imgFrame)
 {
 cout<<"Start Get_img"<<endl;
@@ -594,6 +595,113 @@ cout<<"End Get_img"<<endl;
 #endif
     // Get Image Frame
     m_img = imgFrame.clone();
+   
+    // AI Inference
+    if (!_modelInfernece(m_img))
+    {
+#if defined (SPDLOG)
+      m_logger->error("AI model inference failed ... STOP VisionTracker");
+#endif
+      ret = FAILURE;
+      exit(1);
+    }
+
+    // Get Detected Bounding Boxes
+    // Alister 2023-11-22
+    if (!_objectDetection())
+    {
+#if defined (SPDLOG)
+      m_logger->warn("Detect objects failed ...");
+#endif
+      ret = FAILURE;
+    }
+    // Object Tracking
+    if (!_objectTracking())
+    {
+#if defined (SPDLOG)
+      m_logger->warn("Track objects failed ...");
+#endif
+      ret = FAILURE;
+    }
+    // Show Results
+    _showDetectionResults();
+#if defined (SPDLOG)
+    // Save Results to Debug Logs
+    if (m_dbg_saveLogs)
+    {
+      _saveDetectionResults();
+    }
+#endif
+    //
+    m_preparingNextDetection = false;
+
+    if (m_estimateTime)
+    {
+      time_1 = std::chrono::high_resolution_clock::now();
+#if defined (SPDLOG)
+      m_logger->info("");
+      m_logger->info("Processing Time: \t{} ms", std::chrono::duration_cast<std::chrono::nanoseconds>(time_1 - time_0).count() / (1000.0 * 1000));
+#endif
+    }
+  }
+  else
+  {
+    m_preparingNextDetection = true;
+  }
+  // Draw and Save Results
+  if (m_dsp_results && ret == SUCCESS)
+  {
+    _drawResults();
+  }
+  if (m_dsp_results && m_dbg_saveImages && ret == SUCCESS)
+  {
+    _saveDrawResults();
+  }
+  // Save Raw Images
+  if (m_dbg_saveRawImages)
+  {
+    _saveRawImages();
+  }
+  // Update frame index
+  _updateFrameIndex();
+  return ret;
+}
+
+
+bool VisionTracker::run()
+{
+cv::Mat imFrame = m_yolov8->Get_img();
+#if defined (SPDLOG)
+  auto m_logger = spdlog::get("VisionTracker");
+#endif
+  auto time_0 = std::chrono::high_resolution_clock::now();
+  auto time_1 = std::chrono::high_resolution_clock::now();
+
+  bool ret = SUCCESS;
+
+  if (m_img.empty())
+  {
+#if defined (SPDLOG)
+    m_logger->warn("Input image is empty");
+#endif
+   
+    return false;
+  }
+
+  // Get Image Frame
+  if (m_dsp_results) m_dsp_img = imFrame.clone();
+
+  // Entry Point
+  if (m_frameIdx % m_frameStep == 0)
+  {
+#if defined (SPDLOG)
+    m_logger->info("");
+    m_logger->info("========================================");
+    m_logger->info("Frame Index: {}", m_frameIdx);
+    m_logger->info("========================================");
+#endif
+    // Get Image Frame
+    m_img = imFrame.clone();
    
     // AI Inference
     if (!_modelInfernece(m_img))

@@ -43,7 +43,8 @@ class VisionTracker
   // bool run(cv::Mat &imgFrame,std::vector<BoundingBox> bboxList);
   // bool run(cv::Mat &imgFrame);
   bool run(cv::Mat &imgFrame);
-  // bool run();
+  bool run();
+  // cv::Mat imFrame;
   bool _modelInfernece(cv::Mat &imgFrame);
   void getResults(VisionTrackingResults &result);
   void getResultImage(cv::Mat &imgResult);

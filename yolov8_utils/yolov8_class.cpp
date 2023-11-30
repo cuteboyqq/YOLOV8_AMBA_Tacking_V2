@@ -595,10 +595,10 @@ int YoloV8_Class::test_yolov8_run_2(live_ctx_t *live_ctx, live_params_t *params)
 	int sig_flag = 0;
 	do {
 		if (params->mode == RUN_DUMMY_MODE) {
-			printf("In params->mode == RUN_DUMMY_MODE\n");
+			//printf("In params->mode == RUN_DUMMY_MODE\n");
 			sig_flag = live_run_loop_dummy(live_ctx, params); //RVAL_OK
 		} else {
-			printf("In else \n");
+			//printf("In else \n");
 			sig_flag = live_run_loop_without_dummy(live_ctx, params); //RVAL_OK
 		}
 	} while (0);
@@ -611,14 +611,14 @@ int YoloV8_Class::test_yolov8_run()
     int rval = EA_SUCCESS;
 	int sig_flag = 0;
 	do {
-		printf("In test_yolov8_run , start if (params->mode == RUN_DUMMY_MODE) \n");
+		//printf("In test_yolov8_run , start if (params->mode == RUN_DUMMY_MODE) \n");
 		if (params->mode == RUN_DUMMY_MODE) {
-			printf("Start live_run_loop_dummy\n");
+			//printf("Start live_run_loop_dummy\n");
 			sig_flag = live_run_loop_dummy(YoloV8_Class::live_ctx, YoloV8_Class::params); //RVAL_OK
 		} else {
-			printf("Start live_run_loop_without_dummy\n");
+			//printf("Start live_run_loop_without_dummy\n");
 			sig_flag = live_run_loop_without_dummy(YoloV8_Class::live_ctx, YoloV8_Class::params); //RVAL_OK
-			printf("End live_run_loop_without_dummy\n");
+			//printf("End live_run_loop_without_dummy\n");
 		}
 	} while (0);
 	// return rval;
@@ -628,24 +628,24 @@ int YoloV8_Class::test_yolov8_run()
 void YoloV8_Class::yolov8_thread_join()
 {	
 	int i, j;
-	cout<<"[yolov8_thread_join] Create parameter"<<endl;
+	
 	post_thread_t *thread = NULL;
 	post_thread_params_t *params = NULL;
 	thread = new post_thread_t;
 	params = new post_thread_params_t;
 	*params = live_ctx->thread_ctx.params;
-	cout<<"[yolov8_thread_join] start if"<<endl;
+	
 	if (live_ctx->thread_ctx.thread) {
 		for (i = 0; i < params->thread_num; i++) 
 		{
 			thread = &live_ctx->thread_ctx.thread[i];
-			cout<<"[yolov8_thread_join] start if (thread->thread_created)"<<endl;
+			
 			if (thread->thread_created) 
 			{
-				cout<<"[yolov8_thread_join] start if (thread->exception_exit == 0) "<<endl;
+				
 				if (thread->exception_exit == 0) 
 				{
-					cout<<"[yolov8_thread_join] pthread_join"<<endl;
+					
 					pthread_join(thread->tidp, NULL);
 				}
 			}
@@ -663,15 +663,12 @@ cv::Mat YoloV8_Class::Get_img()
 
 	if(live_ctx->thread_ctx.thread->nn_arm_ctx.bgr!=NULL)
 	{
-		cout<<"In if"<<endl;
 		ea_tensor_t *tensor = (ea_tensor_t *)live_ctx->thread_ctx.thread->nn_arm_ctx.bgr;
 		rval = tensor2mat_bgr2bgr(tensor, bgr);
-		cout<<"End if"<<endl;
 	}
 	else
-	{	cout<<"In else"<<endl;
+	{	
 		bgr = cv::Mat::zeros(1920,1080,CV_8UC3);
-		cout<<"End else"<<endl;
 	}
 
 	return bgr;
@@ -686,8 +683,6 @@ std::vector<BoundingBox> YoloV8_Class::Get_yolov8_Bounding_Boxes(live_ctx_t *liv
 	for (i = 0; i < params->thread_num; i++) 
 	{
 		// thread = &thread_ctx->thread[i];
-
-
 		// yolov8_result_t *yolov8_result = (yolov8_result_t *)live_ctx->thread_ctx.thread->nn_arm_ctx.result;
 		yolov8_result_t *yolov8_result = (yolov8_result_t *)live_ctx->thread_ctx.thread[i].nn_arm_ctx.result;
 		printf("end initial yolov8_result_t~~~\n");
@@ -809,7 +804,7 @@ int YoloV8_Class::Get_Yolov8_Bounding_Boxes_Ver2(v8xyxy bboxList[MAX_YOLO_BBX], 
 		}
 		printf("[Get_Yolov8_Bounding_Boxes]print BB~~~~~~~~~~~~~~~~~~\n");
 		printf("[Get_Yolov8_Bounding_Boxes]Show v8xyxy bboxList ~~~~~~\n");
-		for (int i=0;i<MAX_YOLO_BBX;i++)
+		for (int i=0;i<bbx_number;i++)
 			{
 				if(bboxList[i].x1!=0 && bboxList[i].y1!=0 && bboxList[i].x2 && bboxList[i].y2)
 				{

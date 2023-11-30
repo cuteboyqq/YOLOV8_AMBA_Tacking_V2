@@ -118,8 +118,6 @@ class YoloV8_Class
 
         int test_yolov8_run();
 
-        int run(cv::Mat &imgFrame);
-
 
         void yolov8_thread_join();
 
@@ -207,6 +205,9 @@ class YoloV8_Class
         BoundingBox &fcwROI);
         //BoundingBox &fcwROI);
 
+        //==================Add Tracking======================================================
+        int run(cv::Mat &imgFrame);
+
         // Others
         // Debug
         // void getDebugLogs();
@@ -244,6 +245,7 @@ class YoloV8_Class
 
         
         // ---------------2023-11-29 Alister Copy from yolov8.cpp-----------------------------------------
+        
         // Detection
         void _OD_postProcessing(vector<BoundingBox> bboxlist);
 

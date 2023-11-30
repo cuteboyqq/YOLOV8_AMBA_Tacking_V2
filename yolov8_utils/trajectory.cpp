@@ -304,7 +304,7 @@ void Trajectory::bboxToTrajectory(vector<Object> &objectList)
     // 5 or 9 Boxes
     vector<BoundingBox> rescaleBboxList;
     vector<BoundingBox> smoothedBboxList;
-
+    cout<<"ptrObj->bboxList.size() = "<<ptrObj->bboxList.size()<<endl;
     for (int i=0; i<ptrObj->bboxList.size(); i++)
     {
       BoundingBox rescaleBox(-1, -1, -1, -1, ptrObj->bboxList[i].label);
